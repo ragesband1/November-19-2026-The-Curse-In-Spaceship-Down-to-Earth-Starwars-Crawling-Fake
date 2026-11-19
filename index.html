@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Curse In Spaceship Down to Earth</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    color: #ffe81f;
+    font-family: "Arial Black", Arial, sans-serif;
+  }
+
+  #space {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  #emojiLayer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .flyingEmoji {
+    position: absolute;
+    font-size: 34px;
+    user-select: none;
+    will-change: transform, opacity;
+  }
+
+  .fireworkEmoji {
+    position: absolute;
+    font-size: 26px;
+    user-select: none;
+    will-change: transform, opacity;
+  }
+
+  #introOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    background: radial-gradient(circle at center, #02020a 0%, #000 70%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+  }
+
+  #introOverlay h1 {
+    color: #ffe81f;
+    font-size: clamp(26px, 6vw, 64px);
+    letter-spacing: 4px;
+    text-shadow: 0 0 18px #ffe81f, 0 0 40px #ff9d00;
+    margin-bottom: 18px;
+  }
+
+  #introOverlay p {
+    color: #9fd8ff;
+    font-size: clamp(14px, 2.4vw, 22px);
+    max-width: 760px;
+    line-height: 1.5;
+    margin-bottom: 28px;
+  }
+
+  #startButton {
+    background: linear-gradient(180deg, #ffe81f, #ffae00);
+    color: #000;
+    border: none;
+    padding: 18px 42px;
+    font-size: clamp(18px, 3vw, 28px);
+    font-weight: 900;
+    letter-spacing: 3px;
+    cursor: pointer;
+    border-radius: 8px;
+    box-shadow: 0 0 25px #ffe81f, 0 0 60px #ffae00;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  #startButton:hover {
+    transform: scale(1.06);
+    box-shadow: 0 0 35px #ffe81f, 0 0 90px #ffae00;
+  }
+
+  #musicFrame {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    width: 260px;
+    height: 60px;
+    z-index: 15;
+    border: 0;
+    opacity: 0.001;
+    pointer-events: none;
+  }
+
+  #crawlStage {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    perspective: 420px;
+    overflow: hidden;
+    display: none;
+  }
+
+  #crawlBox {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: min(92vw, 900px);
+    transform: translateX(-50%) rotateX(24deg);
+    transform-origin: 50% 100%;
+    text-align: center;
+  }
+
+  #crawlText {
+    color: #ffe81f;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(20px, 4.2vw, 46px);
+    font-weight: 700;
+    line-height: 1.45;
+    text-align: justify;
+    text-shadow: 0 0 12px #ffb700, 0 0 28px #ff8c00;
+  }
+
+  #crawlText p {
+    margin-bottom: 34px;
+  }
+
+  #openingLine {
+    position: fixed;
+    inset: 0;
+    z-index: 12;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #9fd8ff;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(22px, 5vw, 52px);
+    font-style: italic;
+    padding: 30px;
+    text-shadow: 0 0 20px #4aa8ff, 0 0 45px #0077ff;
+  }
+
+  #gameTitle {
+    position: fixed;
+    inset: 0;
+    z-index: 13;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+  }
+
+  #gameTitle h1 {
+    color: #ffe81f;
+    font-family: "Arial Black", Arial, sans-serif;
+    font-size: clamp(30px, 8vw, 92px);
+    letter-spacing: 5px;
+    line-height: 1.15;
+    text-shadow: 0 0 18px #ffe81f, 0 0 45px #ff9d00, 0 0 90px #ff5e00;
+    opacity: 0;
+    transform: scale(0.4);
+    animation: titleAppear 2.4s ease-out forwards;
+  }
+
+  @keyframes titleAppear {
+    0% {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+    60% {
+      opacity: 1;
+      transform: scale(1.08);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  #nearEndNotice {
+    position: fixed;
+    left: 50%;
+    bottom: 7%;
+    transform: translateX(-50%);
+    z-index: 14;
+    display: none;
+    color: #ff4d4d;
+    font-size: clamp(18px, 3.4vw, 34px);
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-align: center;
+    text-shadow: 0 0 16px #ff0000, 0 0 40px #ff0000;
+    animation: blinkNotice 0.9s infinite alternate;
+  }
+
+  @keyframes blinkNotice {
+    from {
+      opacity: 0.25;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  #replayButton {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    z-index: 18;
+    display: none;
+    background: linear-gradient(180deg, #ffe81f, #ffae00);
+    color: #000;
+    border: none;
+    padding: 14px 32px;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 0 20px #ffe81f, 0 0 50px #ffae00;
+  }
+
+  #replayButton:hover {
+    transform: translateX(-50%) scale(1.06);
+  }
+</style>
+</head>
+<body>
+
+<canvas id="space"></canvas>
+
+<div id="emojiLayer"></div>
+
+<div id="openingLine">
+  There lived a galaxy far, far away&hellip;
+</div>
+
+<div id="gameTitle">
+  <h1>THE CURSE IN<br>SPACESHIP<br>DOWN TO EARTH</h1>
+</div>
+
+<div id="crawlStage">
+  <div id="crawlBox">
+    <div id="crawlText"></div>
+  </div>
+</div>
+
+<div id="nearEndNotice">
+  MALAPIT NANG MATAPOS ANG KWENTO&hellip;
+</div>
+
+<button id="replayButton">REPLAY</button>
+
+<iframe
+  id="musicFrame"
+  title="Background Music"
+  allow="autoplay; encrypted-media"
+  allowfullscreen>
+</iframe>
+
+<div id="introOverlay">
+  <h1>THE CURSE IN SPACESHIP DOWN TO EARTH</h1>
+  <p>
+    Pindutin ang START upang simulan ang Star Wars-style intro, flying emoji fireworks,
+    AI voice narration, hyperspeed stars, at automatic background music.
+  </p>
+  <button id="startButton">START / REPLAY</button>
+</div>
+
+<script>
+  const storyParagraphs = [
+    "Noong unang panahon, wala pang spaceship sa planeta natin.",
+    "May isang astronaut na nagngangalang Petmalu na pumunta sa buwan.",
+    "Ngunit hindi alam ng asong sina Lodi na may alien pala sa buwan na katulad ng piranha humanoid.",
+    "Ginawa ni Petmalu ang isang malaking pagkakamali: hinintay niyang maging monster ang piranha humanoid at saka ito binigyan ng kakaibang serum mula sa periodic element.",
+    "Dahil dito, ang dating mabuting piranha humanoid ay naging zombie apocalypse piranha humanoid.",
+    "Nang makita ni Petmalu ang kanyang ginawa, kinain siya nang buhay ng halimaw.",
+    "Dito nagsimula ang bagong kwento ng zombie monster piranha humanoid na nagngalang Werpa, o Werpanot.",
+    "Pagkatapos kainin si Petmalu, naging busog at mas malakas si Werpanot.",
+    "Habang kumakain siya ng maraming kalaban, lalo siyang lumalakas at nagiging parang immortal.",
+    "Nang makarating si Werpanot sa planet Earth, parang shokoy siyang sumalakay sa siyudad, village, at gobyerno.",
+    "Nag-warning ang mga tao na may halimaw na sumalakay at sinisira ang mga tirahan nila.",
+    "Kumakain din si Werpanot ng mga inosenteng tao.",
+    "Nang malaman ito ni Lodi the Dog, bigla siyang kinabahan.",
+    "Alam niyang na-traydor siya ng kanyang astronaut na kaibigang si Petmalu.",
+    "Si Petmalu ang naging best friend ni Lodi noong nakaraan, ngunit umalis ito nang walang paalam bago pa ito namatay.",
+    "Ilang taon ang lumipas at nabalitaan sa buwan na may maraming dugo at hindi malaman kung sino ang salarin.",
+    "Kailangan itong imbestigahan at hanapin ng mga investigator.",
+    "Nagtataka si Lodi kung ano ang kailangan niyang gawin para malutas ang problema.",
+    "Nang sumalakay si Werpanot sa mundo, winasak niya ang lahat at kumain ng marami.",
+    "Habang mas maliit pa siya noon, mas mabilis siyang lumalaki sa tuwing kumakain siya.",
+    "Parang immortal na siya sa lakas.",
+    "Dumating ang mga missiles, firearms, navy, tanks, at airforces, ngunit tabla pa rin sila kay Werpanot.",
+    "Sobrang lungkot ni Lodi dahil dapat maibalik ang populasyon ng mga tao, mga tahanan, at mga nawawalang hayop.",
+    "Kapag naubos ni Werpanot ang lahat, huli na ang lahat at titira na siya sa Earth.",
+    "Sasakupin pa niya ang bagong planeta at ang walong planeta ng solar system.",
+    "Ang pinakamahirap na kalaban ay ang nilalang na shokoy na si Werpanot, dahil zombie na siya.",
+    "Kapag naging immortal siya, parang si Ben 10 Heatblast na magliliyab ang buong katawan niya sa apoy.",
+    "Mas mahihirapan si Lodi the Dog na talunin siya kung ganito ang mangyayari.",
+    "Kaya naisip ni Lodi kung ano ang kailangan niyang gawin.",
+    "Naalala niya ang kalokohan ni Petmalu noong nasa buwan pa ito.",
+    "Kung hindi sana niya ini-inject ang serum, hindi sana nag-mutate ang piranha humanoid bilang shokoy.",
+    "Nagtatanong si Lodi kung saan niya mahahanap ang antidote o bakuna laban sa immortality ni Werpanot.",
+    "Gumawa si Lodi ng paraan sa pamamagitan ng magic spells.",
+    "Binasa niya ang wizard book upang lumabas ang wizard mula sa kabilang buhay.",
+    "Ang wizard ay immortal at hindi namamatay dahil nasa kabilang buhay siya.",
+    "Ang hirap lang kay Lodi ay hanapin ang pangalan ng taong nasa wizard book.",
+    "Kapag nabasa niya ang password, parang genie ito.",
+    "Kapag tinawag ang kaluluwa ng patay, maaari itong magpakita sa lupa.",
+    "Binasa ni Lodi ang pangalan ng author ng wizard book: Zombalungot.",
+    "Si Zombalungot ay immortal wizard na nabuhay nang sobrang tagal.",
+    "Kaya niyang mabuhay nang 1,000 years dahil sanay siyang magbasa ng Necromancer magic spells.",
+    "Habang paulit-ulit na pinapatay ni Zombalungot ang kanyang kalaban, nagiging mas matibay siya.",
+    "Ang kaluluwa ng patay ay maaaring mag-resurrect nang ilang beses hanggang mapagod ang kalaban.",
+    "Kapag mas lumalakas ang kalaban sa kabila, mas mabilis itong mahihina at matatalo.",
+    "Kaya kung susundin ni Lodi ang payo ni Zombalungot, maaari niyang mapuksa ang kalaban.",
+    "Halos 50 years na ang lumipas.",
+    "Marami nang pamilya, anak, asawa, at singles ang namatay sa Earth.",
+    "Wala pang nahanap na lunas, antidote, o bakuna laban kay Werpanot.",
+    "Nang mag-appear si Wizard Zombalungot, tinanong niya si Lodi kung ano ang pangalan niya.",
+    "Sabi ni Lodi, ako si Lodi at may mali sa aming bayan.",
+    "Marami nang tao ang nagbuwis ng buhay at nawala ang mga tahanan, city, at armed forces.",
+    "Humingi si Lodi ng tulong kay Wizard Zombalungot.",
+    "Sabi ng wizard, bibigyan niya si Lodi ng payo para puksain ang shokoy na si Werpanot.",
+    "Sabi ni Lodi na si Werpanot ang pinakamabagsik na nilalang sa mythology.",
+    "Kung tatagal pa ito nang 80 years, sasakupin nito ang mga tao at saka targetin ang mga hayop.",
+    "Gagawin nitong animal shokoy ang mga hayop dahil kapag naipasa ang zombie virus, mabilis itong mag-mutate.",
+    "Nagtanong si Lodi kung ano ang antidote laban kay Werpanot.",
+    "Sabi ni Wizard Zombalungot, bibigyan niya si Lodi ng mga gems at pagsubok.",
+    "Kailangan ni Lodi the Dog na dumalo sa mga training.",
+    "Bibigyan siya ng 10 gems mula sa pinakamakapangyarihang periodic table of elements.",
+    "Ang mga gems na ito ang puwedeng pumuksa sa immortality ni Werpanot at sa pagpaparami ng zombie virus.",
+    "Ang unang gem ay Plutonium, ang Doom Gem o Radioactive Gem.",
+    "Ito ay malakas sumabog na parang dinamita.",
+    "Kung walang laban si Werpanot dito, matatalo siya.",
+    "Ang pangalawa ay Radon, ang Phantom Gem o poisonous gas.",
+    "Kapag na-inhale ito ni Werpanot, lilit at lilit siya hanggang mamatay ang kanyang immortality.",
+    "Ang pangatlo ay Polonium, ang Assassin Gem.",
+    "Kapag kinagat ito, magiging poisonous curse ang ngipin ng dog shokoy.",
+    "Mabilis itong magdudulot ng bleeding sa internal organs ng kalaban.",
+    "Ang pang-apat ay Cesium, ang Liquid Fire Gem.",
+    "Kapag kinagat ito ni Lodi, magiging apoy siyang shokoy dog.",
+    "Kung si Werpanot ay apoy na shokoy din, tabla sila.",
+    "Ngunit kung 100 percent ang apoy ni Lodi, mabilis na humihina si Werpanot hanggang sa fatal death.",
+    "Ang panglima ay Ununpentium, ang Reality Shatter Gem.",
+    "Ginagawa nitong rebound ang tira ng kalaban.",
+    "Mas mabilis ang tira ni Lodi, mas malakas siya kaysa sa immortal na Werpanot.",
+    "Humihina ang skills ni Werpanot at ng mga animal shokoy.",
+    "Ang pang-anim ay Osmium, ang Crushing Gem.",
+    "Ginagamit ito para i-gravitate ang maling tira ni Werpanot.",
+    "Kung nasa lupa lang si Werpanot, hindi siya makakasurvive sa dust at lupa.",
+    "Kakagatin ni Lodi ang tira ni Werpanot para humina at mag-bleed ito.",
+    "Kapag humina si Werpanot, babalik siya sa dati at hindi na immortal.",
+    "Ang pang-pito ay Francium, ang Chain Reaction Gem.",
+    "Kung may water power si Werpanot at fire si Lodi, mas malakas ang apoy.",
+    "Magdudugo ang balat ni Werpanot at mahihirapan siyang maging immortal.",
+    "Ang pang-walo ay Thorium, ang Sunlight Gem.",
+    "Parang apoy ang epekto nito kay Werpanot.",
+    "Mamamatay siya sa sinag ng araw kapag tuyo ang kanyang lalamunan.",
+    "Hindi na siya makakapagkalat ng virus at mahihirapan siyang kumain.",
+    "Kapag may Sunlight Gem si Lodi, mas madali nitong kakainin ang laman at organs ni Werpanot.",
+    "Ang pang-siyam ay Neptunium, ang Ocean Slayer Gem.",
+    "Kapag tubig laban sa tubig, tabla ang water power ni Werpanot.",
+    "Doon ay sure na patay na agad siya.",
+    "Ang huling gem ay Californium, ang Atomic Curse Gem.",
+    "Mas malakas ito sa immortality ng dog shokoy.",
+    "Kapag kinain ito ni Lodi, magiging immortal siya.",
+    "Immortal laban sa immortal, matatalo si Werpanot.",
+    "Ang mga hayop na hindi pa na-virus ay kakagatin ni Lodi.",
+    "Magpaparami sila ng lahi bilang protagonist animal shokoys.",
+    "Laban sila sa antagonist animal shokoys.",
+    "Hangga't hindi nauubos ang virus ng protagonist shokoys, may pag-asa pang lumakas sila.",
+    "Kapag kinagat ng protagonist animal shokoy ang na-virus na animal shokoy, magiging mutated protagonist animal shokoy ito.",
+    "Hanggang sa matalo ang hari na si Werpanot.",
+    "Sabi ni Wizard Zombalungot, mababalik niya ang mga nakain at nasirang bagay sa past.",
+    "Ngunit kailangang mangako si Lodi the Dog na siya ang super hero ng kwento.",
+    "Pagkatapos ng 100 years, wala pa ring nangyayari.",
+    "25 percent na lang ang populasyon ng mga tao.",
+    "Nagtago ang mga natira sa tunnel para hindi mabuking at makain ni Werpanot.",
+    "Ang goal ni Werpanot ay kumain ng tao para lumakas.",
+    "Kapag mas lumakas siya, kakagatin niya ang mga hayop para maging villain animal shokoys.",
+    "Hanggang kailan magtatago ang mga tao at lalaban sila?",
+    "Ang goal ni Lodi ay sa tulong ni Wizard Zombalungot ay makapagpapaalam siya agad pagkatapos ng pagsasanay.",
+    "Ang main goal ni Lodi ay kainin ang 10 legend gems para maging malakas siya.",
+    "Kapag kumain ang mga antagonist animal shokoys ng mas maraming gems, matatalo siya.",
+    "Kaya hindi siya dapat mahuli, dahil kapag nangyari iyon, end of the world na.",
+    "Ang main character ng kwento ay si Lodi the Dog.",
+    "Siya ang magiging immortal dog shokoy.",
+    "Ang goal ay kumain ng sapat na gems para maligtas ang mundo.",
+    "Kapag kalahati lang ang nakain niya, matatalo siya at walang magliligtas sa mga tao.",
+    "Hangga't nagtatago ang mga tao, may pag-asa pa silang mabuhay sa mundo.",
+    "Sa loob ng 100 years, may mga spaceship na.",
+    "Ang mga animal villain shokoys ay gumagawa ng spaceship.",
+    "Kapag mas marami silang spaceship, mas malakas ang kanilang army.",
+    "Mayroon silang missiles, baril, navy, tanks, at airforce.",
+    "Ang masakit ay kapag kinain nila ang gems, tapos na ang eksena ni Lodi the Dog.",
+    "Ang mahalaga ay mas maraming gems ang makain ni Lodi para lumakas siya.",
+    "Kung gusto ni Wizard Zombalungot na ibalik ang lahat ng nasira at nakain sa past, kailangan niyang manalo.",
+    "Kaya ito ang tinatawag na The Curse In Spaceship Down to Earth.",
+    "Ang mga animal villain shokoys ay magsisipagtalon papunta sa Earth.",
+    "Puwede silang kumain ng tao at lumingon nang lumingon.",
+    "Habang mas marami silang kinakain, mas mahirap silang talunin.",
+    "Payo ni Wizard Zombalungot kay Lodi: magpapaalam muna siya.",
+    "Hangga't hindi natatapos kainin ang mga legend gems, hindi siya babalik.",
+    "At mababago ang mundo sa kapayapaan."
+  ];
+
+  const crawlTextElement = document.getElementById("crawlText");
+  const openingLine = document.getElementById("openingLine");
+  const gameTitle = document.getElementById("gameTitle");
+  const crawlStage = document.getElementById("crawlStage");
+  const introOverlay = document.getElementById("introOverlay");
+  const startButton = document.getElementById("startButton");
+  const replayButton = document.getElementById("replayButton");
+  const nearEndNotice = document.getElementById("nearEndNotice");
+  const musicFrame = document.getElementById("musicFrame");
+  const emojiLayer = document.getElementById("emojiLayer");
+  const spaceCanvas = document.getElementById("space");
+
+  const ctx = spaceCanvas.getContext("2d");
+
+  let animationRunning = false;
+  let starAnimationFrame = null;
+  let emojiAnimationFrame = null;
+  let fireworkSpawner = null;
+  let speechQueue = [];
+  let speechIndex = 0;
+
+  const fireworksEmojis = [
+    "🚀", "👽", "🐶", "🧟‍♂️", "🧙‍♂️", "💥", "🌟", "🛸", "🔥", "☠️",
+    "🧨", "⚡", "🌕", "🪐", "🛰️", "🧪", "💎", "🌊", "☀️", "🐾"
+  ];
+
+  const flyingEmojis = [
+    "🚀", "🛸", "👽", "🐶", "🧟‍♂️", "🧙‍♂️", "🪐", "🌕", "🛰️", "💥", "🔥", "💎"
+  ];
+
+  let stars = [];
+
+  function resizeCanvas() {
+    spaceCanvas.width = window.innerWidth;
+    spaceCanvas.height = window.innerHeight;
+    createStars();
+  }
+
+  function createStars() {
+    stars = [];
+    const starCount = Math.floor((spaceCanvas.width * spaceCanvas.height) / 2600);
+
+    for (let i = 0; i < starCount; i++) {
+      stars.push({
+        x: Math.random() * spaceCanvas.width,
+        y: Math.random() * spaceCanvas.height,
+        z: Math.random() * spaceCanvas.width,
+        size: Math.random() * 2 + 0.5
+      });
+    }
+  }
+
+  function drawHyperspeedStars() {
+    ctx.fillStyle = "#000008";
+    ctx.fillRect(0, 0, spaceCanvas.width, spaceCanvas.height);
+
+    const centerX = spaceCanvas.width / 2;
+    const centerY = spaceCanvas.height / 2;
+
+    for (let i = 0; i < stars.length; i++) {
+      const star = stars[i];
+
+      star.z -= 14;
+
+      if (star.z <= 1) {
+        star.x = Math.random() * spaceCanvas.width;
+        star.y = Math.random() * spaceCanvas.height;
+        star.z = spaceCanvas.width;
+        star.size = Math.random() * 2 + 0.5;
+      }
+
+      const sx = centerX + (star.x - centerX) / star.z * spaceCanvas.width;
+      const sy = centerY + (star.y - centerY) / star.z * spaceCanvas.height;
+
+      const scale = 1 - star.z / spaceCanvas.width;
+      const size = Math.max(0.4, star.size * scale * 3);
+
+      if (sx < -100 || sx > spaceCanvas.width + 100 || sy < -100 || sy > spaceCanvas.height + 100) {
+        continue;
+      }
+
+      ctx.beginPath();
+      ctx.arc(sx, sy, size, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffffff";
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.lineTo(sx, sy);
+      ctx.strokeStyle = "rgba(120, 180, 255, 0.16)";
+      ctx.lineWidth = Math.max(0.5, size / 3);
+      ctx.stroke();
+    }
+
+    starAnimationFrame = requestAnimationFrame(drawHyperspeedStars);
+  }
+
+  function playPopSound() {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.type = "triangle";
+      oscillator.frequency.setValueAtTime(900, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(120, audioContext.currentTime + 0.18);
+
+      gainNode.gain.setValueAtTime(0.28, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.22);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.24);
+
+      setTimeout(function () {
+        audioContext.close();
+      }, 500);
+    } catch (error) {
+      console.log("Audio pop sound could not play.");
+    }
+  }
+
+  function createFireworkEmoji(startX, startY) {
+    const emoji = fireworksEmojis[Math.floor(Math.random() * fireworksEmojis.length)];
+    const particleCount = 16;
+
+    for (let i = 0; i < particleCount; i++) {
+      const particle = document.createElement("div");
+      particle.className = "fireworkEmoji";
+      particle.textContent = emoji;
+
+      const angle = (Math.PI * 2 * i) / particleCount;
+      const distance = 90 + Math.random() * 130;
+
+      const endX = Math.cos(angle) * distance;
+      const endY = Math.sin(angle) * distance;
+
+      particle.style.left = startX + "px";
+      particle.style.top = startY + "px";
+      particle.style.opacity = "1";
+
+      emojiLayer.appendChild(particle);
+
+      const animation = particle.animate(
+        [
+          {
+            transform: "translate(0px, 0px) scale(1.2) rotate(0deg)",
+            opacity: 1
+          },
+          {
+            transform: "translate(" + endX + "px, " + endY + "px) scale(0.3) rotate(" + (Math.random() * 360) + "deg)",
+            opacity: 0
+          }
+        ],
+        {
+          duration: 900 + Math.random() * 700,
+          easing: "cubic-bezier(0.1, 0.7, 0.3, 1)"
+        }
+      );
+
+      animation.onfinish = function () {
+        particle.remove();
+      };
+    }
+  }
+
+  function spawnFlyingEmoji() {
+    const emoji = document.createElement("div");
+    emoji.className = "flyingEmoji";
+
+    emoji.textContent = flyingEmojis[Math.floor(Math.random() * flyingEmojis.length)];
+
+    const startX = Math.random() * window.innerWidth;
+    const startY = window.innerHeight + 80;
+
+    const endX = startX + (Math.random() * 300 - 150);
+    const endY = -140 - Math.random() * 180;
+
+    emoji.style.left = startX + "px";
+    emoji.style.top = startY + "px";
+
+    emojiLayer.appendChild(emoji);
+
+    const animation = emoji.animate(
+      [
+        {
+          transform: "translate(0px, 0px) rotate(0deg) scale(1)",
+          opacity: 1
+        },
+        {
+          transform: "translate(" + (endX - startX) + "px, " + (endY - startY) + "px) rotate(" + (Math.random() * 720 - 360) + "deg) scale(1.15)",
+          opacity: 1
+        }
+      ],
+      {
+        duration: 4200 + Math.random() * 4200,
+        easing: "linear"
+      }
+    );
+
+    const explodeTimer = setTimeout(function () {
+      createFireworkEmoji(startX, startY);
+      playPopSound();
+      emoji.remove();
+    }, 2600 + Math.random() * 2600);
+
+    animation.onfinish = function () {
+      clearTimeout(explodeTimer);
+      emoji.remove();
+    };
+  }
+
+  function startEmojiFireworks() {
+    fireworkSpawner = setInterval(function () {
+      const spawnCount = 2 + Math.floor(Math.random() * 3);
+
+      for (let i = 0; i < spawnCount; i++) {
+        spawnFlyingEmoji();
+      }
+    }, 520);
+  }
+
+  function buildCrawlText() {
+    crawlTextElement.innerHTML = "";
+
+    for (let i = 0; i < storyParagraphs.length; i++) {
+      const paragraph = document.createElement("p");
+      paragraph.textContent = storyParagraphs[i];
+      crawlTextElement.appendChild(paragraph);
+    }
+  }
+
+  function speakStory() {
+    if (!("speechSynthesis" in window)) {
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    speechQueue = [];
+    speechIndex = 0;
+
+    speechQueue.push("There lived a galaxy far, far away.");
+
+    for (let i = 0; i < storyParagraphs.length; i++) {
+      speechQueue.push(storyParagraphs[i]);
+    }
+
+    speakNextLine();
+  }
+
+  function speakNextLine() {
+    if (speechIndex >= speechQueue.length) {
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(speechQueue[speechIndex]);
+    utterance.rate = 0.95;
+    utterance.pitch = 0.9;
+    utterance.volume = 1;
+
+    utterance.onend = function () {
+      speechIndex++;
+      speakNextLine();
+    };
+
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function startMusic() {
+    musicFrame.src =
+      "https://www.youtube.com/embed/ROSqOb0TVx8?autoplay=1&mute=0&controls=0&loop=1&playlist=ROSqOb0TVx8&modestbranding=1&rel=0&playsinline=1";
+  }
+
+  function resetExperience() {
+    animationRunning = false;
+
+    if (starAnimationFrame) {
+      cancelAnimationFrame(starAnimationFrame);
+      starAnimationFrame = null;
+    }
+
+    if (emojiAnimationFrame) {
+      cancelAnimationFrame(emojiAnimationFrame);
+      emojiAnimationFrame = null;
+    }
+
+    if (fireworkSpawner) {
+      clearInterval(fireworkSpawner);
+      fireworkSpawner = null;
+    }
+
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+
+    emojiLayer.innerHTML = "";
+    crawlTextElement.innerHTML = "";
+    musicFrame.src = "";
+
+    openingLine.style.display = "none";
+    gameTitle.style.display = "none";
+    crawlStage.style.display = "none";
+    nearEndNotice.style.display = "none";
+    replayButton.style.display = "none";
+
+    createStars();
+  }
+
+  function startExperience() {
+    resetExperience();
+
+    animationRunning = true;
+
+    introOverlay.style.display = "none";
+    openingLine.style.display = "flex";
+
+    drawHyperspeedStars();
+    startEmojiFireworks();
+    speakStory();
+
+    setTimeout(function () {
+      openingLine.style.display = "none";
+      gameTitle.style.display = "flex";
+
+      startMusic();
+
+      setTimeout(function () {
+        gameTitle.style.display = "none";
+        crawlStage.style.display = "block";
+
+        buildCrawlText();
+
+        const crawlDuration = 150000;
+
+        crawlBoxAnimate(crawlDuration);
+
+        setTimeout(function () {
+          nearEndNotice.style.display = "block";
+        }, crawlDuration - 18000);
+
+        setTimeout(function () {
+          nearEndNotice.style.display = "none";
+          replayButton.style.display = "block";
+        }, crawlDuration);
+      }, 3600);
+    }, 4200);
+  }
+
+  function crawlBoxAnimate(duration) {
+    const crawlBox = document.getElementById("crawlBox");
+
+    crawlBox.animate(
+      [
+        {
+          transform: "translateX(-50%) translateY(0px) rotateX(24deg)"
+        },
+        {
+          transform: "translateX(-50%) translateY(-260vh) rotateX(24deg)"
+        }
+      ],
+      {
+        duration: duration,
+        easing: "linear",
+        fill: "forwards"
+      }
+    );
+  }
+
+  startButton.addEventListener("click", function () {
+    startExperience();
+  });
+
+  replayButton.addEventListener("click", function () {
+    startExperience();
+  });
+
+  window.addEventListener("resize", function () {
+    resizeCanvas();
+  });
+
+  resizeCanvas();
+</script>
+
+</body>
+</html>
